@@ -149,3 +149,52 @@ function playVideo() {
 
 </body>
 </html>
+<script>
+function playVideo() {
+    let urlInput = document.getElementById('videoUrl').value.trim();
+    const container = document.getElementById('videoContainer');
+    const errorMsg = document.getElementById('errorMessage');
+    
+    // 初期化
+    container.innerHTML = '';
+    container.style.display = 'none';
+    errorMsg.style.display = 'none';
+
+    if (!urlInput) return;
+
+    let videoId = '';
+
+    // 1. 通常のYouTube URLやShortsのURLからIDを抽出する正規表現
+    // (www.youtube.com, youtube.com, m.youtube.com など幅広く対応)
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/ ]{11})/;
+    const match = urlInput.match(youtubeRegex);
+
+    if (match && match[1]) {
+        videoId = match[1];
+        // 埋め込み用のURLを作成（autoplay=1で自動再生）
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        container.innerHTML = `<iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        container.style.display = 'block';
+        return;
+    }
+    
+    // 2. 直接リンクの動画ファイル（mp4, webm, ogg）の判定
+    if (urlInput.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+        // http(s):// が抜けている場合は補完
+        if (!/^https?:\/\//i.test(urlInput)) {
+            urlInput = 'https://' + urlInput;
+        }
+        container.innerHTML = `<video src="${urlInput}" controls autoplay style="width:100%; height:100%; object-fit:contain;"></video>`;
+        container.style.display = 'block';
+        return;
+    }
+
+    // 3. どの条件にも合わない場合
+    if (/^https?:\/\//i.test(urlInput)) {
+        container.innerHTML = `<iframe src="${urlInput}" allowfullscreen></iframe>`;
+        container.style.display = 'block';
+    } else {
+        errorMsg.style.display = 'block';
+    }
+}
+</script>
